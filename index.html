@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>自分はもしかしてテイカー？ギバー？診断 | ジブンwoカシカ</title>
+<style>
+  :root{
+    --bg:#faf7f2;
+    --ink:#1c1917;
+    --ink-soft:#4a4541;
+    --accent:#9b6b3a;
+    --accent-soft:#e8ddd0;
+    --card:#ffffff;
+    --line:#e6ded2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Noto Serif JP","Noto Serif Japanese",serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.85;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:28px 20px 80px;}
+  .brand{
+    font-size:13px;letter-spacing:.08em;color:var(--accent);text-align:center;margin-bottom:6px;
+  }
+  h1{font-size:22px;text-align:center;margin:0 0 6px;line-height:1.5;}
+  .lead{font-size:14px;color:var(--ink-soft);text-align:center;margin-bottom:28px;}
+
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  /* intro */
+  .box{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px 20px;margin-bottom:18px;
+  }
+  .box h2{font-size:16px;margin:0 0 12px;border-left:4px solid var(--accent);padding-left:10px;}
+  .box ul{margin:0;padding-left:1.2em;font-size:14.5px;}
+  .box li{margin-bottom:8px;}
+  .box p{font-size:14.5px;margin:0 0 10px;}
+  .note{font-size:12.5px;color:var(--ink-soft);background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin-top:4px;}
+
+  .start-btn{
+    display:block;width:100%;padding:16px;margin-top:22px;
+    background:var(--ink);color:#fff;border:none;border-radius:999px;
+    font-size:16px;font-family:inherit;cursor:pointer;letter-spacing:.04em;
+  }
+  .start-btn:active{opacity:.85;}
+
+  /* question */
+  .progress-wrap{margin-bottom:22px;}
+  .progress-bar{height:5px;background:var(--line);border-radius:999px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--accent);width:0%;transition:width .25s;}
+  .progress-text{font-size:12px;color:var(--ink-soft);text-align:right;margin-top:6px;}
+
+  .q-text{font-size:18px;margin:10px 0 26px;line-height:1.7;}
+  .choices{display:flex;flex-direction:column;gap:10px;}
+  .choice{
+    background:var(--card);border:1.5px solid var(--line);border-radius:12px;
+    padding:14px 16px;font-size:14.5px;cursor:pointer;transition:.15s;
+  }
+  .choice:active{background:var(--accent-soft);border-color:var(--accent);}
+
+  /* results */
+  .result-hero{
+    background:var(--ink);color:#fff;border-radius:16px;padding:26px 22px;margin-bottom:22px;
+  }
+  .result-hero .tag{font-size:12px;color:var(--accent-soft);letter-spacing:.08em;margin-bottom:8px;}
+  .result-hero h2{font-size:21px;margin:0 0 10px;line-height:1.6;}
+  .result-hero p{font-size:14px;color:#ddd6cc;margin:0;}
+
+  .sec-label{
+    font-size:13px;color:var(--accent);letter-spacing:.1em;margin:30px 0 10px;font-weight:bold;
+  }
+  .bar-row{margin-bottom:16px;}
+  .bar-row .lbl{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:5px;}
+  .bar-track{height:10px;background:var(--line);border-radius:999px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--accent);border-radius:999px;}
+
+  .badge{
+    display:inline-block;font-size:11.5px;background:var(--accent-soft);color:var(--accent);
+    padding:3px 10px;border-radius:999px;margin-bottom:10px;
+  }
+
+  .scene-item{margin-bottom:14px;}
+  .scene-item .who{font-size:13.5px;font-weight:bold;color:var(--accent);margin-bottom:4px;}
+  .scene-item p{margin:0;font-size:14.5px;}
+
+  .disclaimer{
+    font-size:12px;color:var(--ink-soft);border-top:1px solid var(--line);
+    margin-top:36px;padding-top:16px;
+  }
+  .disclaimer p{margin:0 0 8px;}
+
+  .back-btn{
+    display:block;width:100%;padding:12px;margin-top:20px;
+    background:transparent;color:var(--ink-soft);border:none;
+    font-size:13.5px;font-family:inherit;cursor:pointer;text-align:center;
+    visibility:visible;
+  }
+  .back-btn:disabled{visibility:hidden;}
+
+  .restart{
+    display:block;width:100%;padding:14px;margin-top:24px;
+    background:transparent;color:var(--ink);border:1.5px solid var(--ink);border-radius:999px;
+    font-size:14px;font-family:inherit;cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">👀 ジブンwoカシカ 👀</div>
+  <h1>自分はもしかして<br>テイカー？ギバー？診断</h1>
+  <div class="lead">自分が気づいていない「与え方のクセ」を可視化する</div>
+
+  <!-- INTRO -->
+  <section class="screen active" id="screen-intro">
+    <div class="box">
+      <h2>この診断でわかること</h2>
+      <ul>
+        <li>自分が普段、人にどれくらい与えているか（与える行動の量）</li>
+        <li>その「与え」に、どれくらい見返りを期待しているか（見返りへのこだわり）</li>
+        <li>自分でも気づきにくい、人付き合いの中の弱点（盲点）</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>受け取れるもの</h2>
+      <p>与える量と、見返りへのこだわり。2つの軸と、断れなさ・自己優先度・搾取への気づき・境界線の強さという複数の要素から導く、あなたの「人付き合いタイプ」。</p>
+      <p>そして、そのタイプが家族・恋人・友人・職場でどう表れやすいか、次に何を変えればラクになるかの行動の手順まで、具体的にお伝えします。</p>
+    </div>
+
+    <div class="box">
+      <h2>その結果、こうなります</h2>
+      <p>「私ばかりやってる気がする」「でも、やめるのも気が引ける」——そのモヤモヤを、感覚ではなく言葉と数値で扱えるようになります。どこを変えれば負担が減るのか、具体的な次の一歩が見えてきます。</p>
+      <div class="note">全20問・所要時間の目安は約3分です。</div>
+    </div>
+
+    <div class="box">
+      <h2>診断前に、少しだけ</h2>
+      <ul>
+        <li>この診断は、公平感受性（Equity Sensitivity）や共同的関係（Communal Orientation）といった心理学の考え方をもとに作っていますが、医学的な診断ではありません。あくまで「傾向」「目安」としてご覧ください</li>
+        <li>パートナーの有無や性別に関わらず答えられる設問にしています</li>
+        <li>直近3〜6か月くらいの、ふだんの自分を思い浮かべて答えてください</li>
+      </ul>
+    </div>
+
+    <button class="start-btn" id="btn-start">さぁ、さっそく診断していきましょう！</button>
+  </section>
+
+  <!-- QUESTION -->
+  <section class="screen" id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">1 / 20</div>
+    </div>
+    <div class="q-text" id="q-text"></div>
+    <div class="choices" id="choices"></div>
+    <button class="back-btn" id="btn-back">← 前の質問に戻る</button>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="screen-result">
+    <div id="result-body"></div>
+  </section>
+
+</div>
+
+<script>
+/* ===================== 設問定義 =====================
+   facet: F1 与える行動 / F2 見返り期待 / F3 断れなさ(罪悪感) / F4 自己優先 / F5 搾取への気づき / F6 境界線
+   rev: true の場合は 6-score で反転してから加点（文章自体は常に肯定形） */
+const QUESTIONS = [
+  // F1 与える行動（4問）
+  {text:"困っている人を見かけると、自然と手を貸すことが多い。", facet:"F1", rev:false},
+  {text:"頼まれていなくても、相手の役に立ちそうなことをすることが多い。", facet:"F1", rev:false},
+  {text:"自分の時間を削ってでも、人の手伝いをすることが多い。", facet:"F1", rev:false},
+  {text:"話を聞いてほしいという相手には、時間をとって付き合うことが多い。", facet:"F1", rev:false},
+
+  // F2 見返り期待（3問）
+  {text:"何かしてあげたときは、同じくらいのお返しを期待することが多い。", facet:"F2", rev:false},
+  {text:"自分がしたことに対して、感謝や反応が返ってくると安心する。", facet:"F2", rev:false},
+  {text:"お返しが長い間ないと、相手への見方が変わることが多い。", facet:"F2", rev:false},
+
+  // F3 断れなさ・罪悪感（3問）
+  {text:"頼まれごとを断ると、しばらく気まずさを感じることが多い。", facet:"F3", rev:false},
+  {text:"気が進まない誘いでも、内容が合えば、なんだかんだ引き受けることが多い。", facet:"F3", rev:false},
+  {text:"「自分が我慢すれば済む」と考えて、不満を飲み込むことが多い。", facet:"F3", rev:false},
+
+  // F4 自己優先（4問）
+  {text:"自分の都合を優先して、予定を変えてもらうことが多い。", facet:"F4", rev:false},
+  {text:"会話の中で、自分の話をする時間の方が長くなることが多い。", facet:"F4", rev:false},
+  {text:"決め事をするとき、自分の希望が通るように話を進めることが多い。", facet:"F4", rev:false},
+  {text:"困ったときは、まず人に頼ることが多い。", facet:"F4", rev:false},
+
+  // F5 搾取への気づき（3問・高いほど「気づけている」）
+  {text:"「同じ人にばかり頼られているな」と感じたら、はっきり自覚できる方だ。", facet:"F5", rev:false},
+  {text:"頑張りに見合う扱いを受けていないと感じたとき、それに気づく方だ。", facet:"F5", rev:false},
+  {text:"自分が一方的に損をしている関係に、わりと早く気づく方だ。", facet:"F5", rev:false},
+
+  // F6 境界線（3問・高いほど健全に線引きできる）
+  {text:"気が乗らない誘いは、はっきり断ることができる。", facet:"F6", rev:false},
+  {text:"無理なお願いをされたときは、できないと伝えることができる。", facet:"F6", rev:false},
+  {text:"自分の時間を守るために、あらかじめ予定を決めておくことができる。", facet:"F6", rev:false},
+];
+
+const SCALE = [
+  {v:1, label:"全く当てはまらない"},
+  {v:2, label:"あまり当てはまらない"},
+  {v:3, label:"どちらとも言えない"},
+  {v:4, label:"やや当てはまる"},
+  {v:5, label:"非常に当てはまる"},
+];
+
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+
+const screenIntro = document.getElementById('screen-intro');
+const screenQuiz = document.getElementById('screen-quiz');
+const screenResult = document.getElementById('screen-result');
+
+document.getElementById('btn-start').addEventListener('click', () => {
+  show(screenQuiz);
+  renderQuestion();
+});
+
+document.getElementById('btn-back').addEventListener('click', () => {
+  if(current > 0){
+    current--;
+    renderQuestion();
+  }
+});
+
+function show(el){
+  [screenIntro, screenQuiz, screenResult].forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[current];
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('progress-text').textContent = (current+1) + ' / ' + QUESTIONS.length;
+  document.getElementById('progress-fill').style.width = ((current)/QUESTIONS.length*100) + '%';
+
+  const box = document.getElementById('choices');
+  box.innerHTML = '';
+  SCALE.forEach(opt => {
+    const d = document.createElement('div');
+    d.className = 'choice';
+    if(answers[current] === opt.v) d.style.borderColor = 'var(--accent)';
+    d.textContent = opt.label;
+    d.addEventListener('click', () => selectAnswer(opt.v));
+    box.appendChild(d);
+  });
+
+  document.getElementById('btn-back').disabled = (current === 0);
+}
+
+function selectAnswer(v){
+  answers[current] = v;
+  current++;
+  if(current < QUESTIONS.length){
+    renderQuestion();
+  } else {
+    document.getElementById('progress-fill').style.width = '100%';
+    computeResult();
+  }
+}
+
+/* ===================== 採点ロジック ===================== */
+function facetScore(facetName){
+  const items = QUESTIONS.map((q,i)=>({q,i})).filter(o=>o.q.facet===facetName);
+  let sum = 0;
+  items.forEach(o=>{
+    let v = answers[o.i];
+    if(o.q.rev) v = 6 - v;
+    sum += v;
+  });
+  const avg = sum / items.length; // 1-5
+  return Math.round((avg-1)/4*100); // 0-100
+}
+
+function band(score){
+  if(score < 40) return 'low';
+  if(score > 65) return 'high';
+  return 'mid';
+}
+
+const TYPES = {
+  'high-low':  {name:'自己犠牲型ギバー', desc:'与える量はかなり多く、見返りはほとんど気にしません。周りからの信頼は厚い一方、気づかないうちに負担を背負い込みやすいタイプです。'},
+  'high-mid':  {name:'健全なギバー', desc:'たくさん与えながら、無理のない範囲で見返りも受け取れている状態。周囲との関係が長続きしやすい、バランスの良いタイプです。'},
+  'high-high': {name:'見返り期待型ギバー', desc:'与える量は多いものの、内心では「同じくらい返ってきてほしい」という気持ちも強め。思うような反応が返ってこないとき、不満が溜まりやすいタイプです。'},
+  'mid-low':   {name:'控えめな献身家', desc:'与える量はほどほどですが、見返りはあまり求めません。目立たないところで人を支えていることが多いタイプです。'},
+  'mid-mid':   {name:'バランス型マッチャー', desc:'与えることと受け取ることのバランスが取れている状態。研究上、長期的に最も消耗しにくいとされるタイプです。'},
+  'mid-high':  {name:'条件交換型', desc:'与える量はほどほどですが、「これをしたら、これが返ってくる」という感覚が強め。損得の見極めは早いタイプです。'},
+  'low-low':   {name:'省エネ型', desc:'与える量も見返りへのこだわりも控えめ。人間関係に多くのエネルギーを割かない、自分のペースを保つタイプです。'},
+  'low-mid':   {name:'受け身型', desc:'自分から与えることは少なめですが、求められれば応じる形。関係の主導権は相手に委ねがちなタイプです。'},
+  'low-high':  {name:'テイカー傾向', desc:'与える量より、受け取りたい気持ちの方が強めに出ています。悪気はなくても、周囲からは「私ばかり」と見えている可能性があるタイプです。'},
+};
+
+const BLINDSPOTS = {
+  F3: {
+    title:'断れなさ・罪悪感',
+    text:'頼まれごとを断ることに、人より強い気まずさを感じているようです。「断る＝相手を傷つける」「断る＝自分が悪者になる」というイメージが強く結びついていて、本心では気が進まないときでも、つい「大丈夫です」と答えてしまう場面が多いのかもしれません。これは優しさの裏返しでもありますが、積み重なると「言いたいことを飲み込む癖」が固定化し、気づけば自分の時間や気持ちがいつも後回しになる、という状態に陥りやすい要素でもあります。しかも厄介なのは、断れない自分を「人がいいだけ」と思い込みやすく、負担が溜まっていることに本人がいちばん気づきにくい、という点です。',
+    action:'まずは「即答しない」練習から始めてみてください。頼まれた瞬間に「大丈夫です」と言う代わりに、「ちょっと確認してから返事します」と一度持ち帰る癖をつけるだけで、冷静に判断する余白が生まれます。それでも気まずさを感じる場合は、断る理由を詳しく説明しようとしないことも大切です。「今回は難しいです」のひとことで十分で、説明を重ねるほど相手に判断を委ねる隙を与えてしまいます。小さな頼まれごとから「持ち帰る→本当にやりたいか考える→必要なら断る」を一度試してみると、断ることへの恐怖が思ったより小さいと実感できるはずです。'
+  },
+  F4: {
+    title:'自己優先の強さ',
+    text:'自分の都合や話を優先する場面が、やや多めに出ています。悪気があるわけではなく、むしろ自分の意見や希望をはっきり持っている証拠でもありますが、その分、相手が無意識に合わせる側に回っている可能性があります。本人としては「普通に会話している」「普通に予定を決めている」感覚でも、相手の視点からは「いつも相手のペースに合わせている」と感じられていることがあり、このズレは本人には見えにくいという特徴があります。特に関係が長くなるほど相手も指摘しづらくなり、気づかないうちに一方通行のコミュニケーションが定着してしまうリスクがあります。',
+    action:'次の会話や予定調整のときに、相手が話し終わる・意見を出し終わるまで、自分の提案を言わずに待ってみてください。「〇〇さんはどう思う？」とひとこと聞くだけでも、相手が意見を出しやすい空気に変わります。予定を決める場面では、自分の希望を最初に出すのではなく、まず「〇〇さんはどうしたい？」から聞いてみる。これを数回繰り返すだけで、相手の反応や会話の広がり方が変わってくるのを感じられるはずです。'
+  },
+  F5: {
+    title:'搾取への気づきにくさ',
+    text:'自分が一方的に損をしている状況に、気づくまで時間がかかるタイプのようです。頑張りを積み重ねてから、ある日ふと「あれ、これっておかしいかも」と気づく、というパターンに心当たりがあるかもしれません。これは鈍感だからではなく、むしろ相手の事情や背景を想像する力が強く、「きっと向こうにも理由があるはず」「自分が我慢すればいいだけ」と、不公平さよりも相手への理解を優先してしまう思考のクセが関係しています。ただしこの思考のクセは、関係が長く続くほど「頼られるのが当たり前」という空気を相手に作ってしまい、気づいたときには負担が大きく積み上がっている、という状況を招きやすい点には注意が必要です。',
+    action:'「頼まれて動いた回数」と「頼んで動いてもらった回数」を、1週間だけでいいので手帳やメモアプリに記録してみてください。感覚ではなく数字で見ると、自分でも気づいていなかった偏りが見えてくることがあります。もし偏りに気づいても、すぐに関係を変えようとしなくて大丈夫です。まずは「自分はこう感じている」と気づくこと自体が、次に取る行動の土台になります。'
+  },
+  F6: {
+    title:'境界線の弱さ',
+    text:'自分の時間や気持ちを守るための線引きが、少し苦手な傾向があります。相手の頼みごとや誘いに対して「断る」という選択肢が、頭に浮かびにくい、あるいは浮かんでも実行に移しにくい状態かもしれません。これは相手を大切にしたい気持ちの表れでもありますが、境界線が曖昧なままだと、自分のキャパシティを超えた頼まれごとまで引き受けてしまい、結果的に相手にも質の良い対応ができなくなる、という悪循環につながりやすい要素でもあります。境界線は「相手を拒絶するための壁」ではなく、「長く良い関係を続けるための調整弁」だと捉え直すと、少し取り組みやすくなります。',
+    action:'「できません」を主語を自分にして伝える練習をしてみてください。「忙しくて」「他の予定があって」と理由から話し始めるのではなく、「今回は見送ります」「それは難しいです」と結論を先に、短く伝えることを意識するだけで、断る側の心理的なハードルがぐっと下がります。最初は小さな頼まれごとで練習し、慣れてきたら少しずつ範囲を広げていくのがおすすめです。'
+  }
+};
+
+const SCENES = [
+  {who:'家族など身近な人', key:'family'},
+  {who:'恋人やパートナー', key:'partner'},
+  {who:'友人', key:'friend'},
+  {who:'職場', key:'work'},
+];
+
+function sceneText(typeKey, who){
+  const giving = typeKey.split('-')[0];
+  const table = {
+    family: {
+      high: {
+        text:'家族の頼みごとを断りにくく、気づけば世話役になっていることが多いはずです。家族は距離を取りにくい関係のため、関わりを完全に減らすという発想よりも「影響を減らす」という考え方の方が現実的です。',
+        action:'家族からの頼まれごとに対して、毎回全力で応えるのではなく「今回はここまで」とあらかじめ自分の中で範囲を決めておくことが有効です。相談には乗るが解決は本人に委ねる、手伝いは一度だけにして継続的な役割は引き受けない、といった形で関わる範囲を少しずつ区切っていくと、負担を減らしながら関係を保ちやすくなります。'
+      },
+      mid: { text:'家族との間では、ほどよい距離感で役割をこなせている方です。今のバランスを大きく変える必要はなさそうですが、繁忙期や相手の状況が変わったタイミングでは、負担が偏っていないか時々振り返ってみると安心です。' },
+      low: { text:'家族の頼みごとには、わりと冷静に線を引けている方です。本当に助けが必要な場面まで距離を取りすぎていないか、年に数回は意識して確認してみるとバランスが取りやすくなります。' }
+    },
+    partner: {
+      high: {
+        text:'恋人・パートナーには尽くしやすい一方、見返りが少ないと感じると静かに不満が溜まりやすいタイプです。尽くすこと自体は悪くありませんが、「自分がしていること」を相手に言葉にして伝えていないと、相手はそれに気づかないまま時間が過ぎてしまいます。',
+        action:'「今日は〇〇をしたよ」と、していることを軽く共有する習慣をつけてみてください。見返りを求めているように聞こえるのが気になる場合は、「〜してみたよ、どうだった？」のように感想を聞く形にすると伝えやすくなります。'
+      },
+      mid: { text:'恋人・パートナーとは、与える・受け取るのバランスが比較的取れています。今のやり取りを続けつつ、節目ごとに「無理していることはないか」を確認し合う習慣があると、さらに安定しやすくなります。' },
+      low: { text:'恋人・パートナーとの関係では、自分のペースを保てている方です。相手が合わせてくれている部分がないか、ときどき相手の様子を確認してみると、関係の満足度をより正確に把握できます。' }
+    },
+    friend: {
+      high: {
+        text:'友人関係では頼られることが多く、「相談役」のポジションになりやすいはずです。相談に乗ること自体はあなたの強みですが、すべての相談に同じ熱量で応えようとすると消耗が早まります。',
+        action:'「話を聞く」と「解決策を一緒に考える」を自分の中で分けて、聞くだけで終える日があってもいいと決めておくと、気持ちの負担が軽くなります。'
+      },
+      mid: { text:'友人関係は、ギブアンドテイクがうまく回っている方です。今の距離感を保ちつつ、疎遠になりがちな相手にも時々連絡してみると、関係の幅がさらに広がります。' },
+      low: { text:'友人関係では、誘いや頼みごとに対して、わりとドライに判断できる方です。その分、本当に大切にしたい相手には、意識して一歩踏み込んでみると関係がより深まりやすくなります。' }
+    },
+    work: {
+      high: {
+        text:'職場では「あの人に頼めば大丈夫」と思われやすく、仕事量が偏りやすい傾向があります。この状態を続けると、評価が「頼りになる人」止まりで、負担に見合う評価や役割に結びつきにくいことがあります。',
+        action:'新しい依頼を受ける前に、今自分が抱えている仕事を一度書き出して優先順位を可視化し、「今週はここまでなら対応できます」と具体的な範囲を伝える練習をしてみてください。'
+      },
+      mid: { text:'職場では、頼まれ仕事と自分の仕事のバランスをうまく取れている方です。今のやり方を保ちながら、繁忙期だけは抱え込みすぎていないか意識しておくと安心です。' },
+      low: { text:'職場では、自分の仕事量を守るための線引きができている方です。チーム全体の負担が偏っていないか、ときどき周りにも目を向けてみると、さらに信頼されるポジションになれます。' }
+    }
+  };
+  return table[SCENES.find(s=>s.who===who).key][giving];
+}
+
+function computeResult(){
+  const giving = facetScore('F1');
+  const recip = facetScore('F2');
+  const gBand = band(giving);
+  const rBand = band(recip);
+  const typeKey = gBand + '-' + rBand;
+  const type = TYPES[typeKey];
+
+  // 盲点: F3,F4,F5,F6 の中で最も「懸念」が強いものを選ぶ
+  const f3 = facetScore('F3');
+  const f4 = facetScore('F4');
+  const f5 = facetScore('F5');
+  const f6 = facetScore('F6');
+  const concerns = {
+    F3: f3,
+    F4: f4,
+    F5: 100 - f5,
+    F6: 100 - f6,
+  };
+  let blindKey = Object.keys(concerns).reduce((a,b)=> concerns[a] >= concerns[b] ? a : b);
+  const concernVals = Object.values(concerns);
+  const maxC = Math.max(...concernVals);
+  const minC = Math.min(...concernVals);
+  const noWeakPoint = (maxC - minC) < 10;
+
+  // 境目チェック（±5以内）
+  function nearBoundary(score){
+    return Math.abs(score-40) <= 5 || Math.abs(score-65) <= 5;
+  }
+  const gNear = nearBoundary(giving);
+  const rNear = nearBoundary(recip);
+
+  // 信頼性（回答パターンチェック）
+  const allSame = answers.every(a => a === answers[0]);
+  const variety = new Set(answers).size;
+  let reliability = '高い';
+  if(allSame || variety <= 2) reliability = '参考程度';
+
+  renderResult({giving,recip,type,blindKey,noWeakPoint,gNear,rNear,reliability,typeKey});
+}
+
+function renderResult(r){
+  const bs = BLINDSPOTS[r.blindKey];
+  let html = '';
+
+  html += `<div class="result-hero">
+    <div class="tag">診断結果</div>
+    <h2>あなたは「${r.type.name}」タイプ</h2>
+    <p>${r.type.desc}</p>
+  </div>`;
+
+  if(r.reliability === '参考程度'){
+    html += `<div class="badge">診断の一貫性：参考程度 — 回答の振れ幅が少なく、実際の傾向をうまく拾えていない可能性があります。できれば、普段の自分によりしっくりくる回答で、もう一度試してみてください</div>`;
+  } else {
+    html += `<div class="badge">診断の一貫性：高い</div>`;
+  }
+
+  if(r.gNear || r.rNear){
+    html += `<div class="badge">境目に近い結果です。もう一方の傾向も混ざっているかもしれません</div>`;
+  }
+
+  html += `<div class="sec-label">結果 — 2つの軸</div>`;
+  html += barRow('与える行動の量', r.giving);
+  html += barRow('見返りへのこだわり', r.recip);
+
+  html += `<div class="sec-label">結果 — 気づきにくい盲点</div>`;
+  if(r.noWeakPoint){
+    html += `<div class="box"><p>目立った弱点は見られませんでした。全体として偏りの少ない状態のようです。</p></div>`;
+  } else {
+    html += `<div class="box">
+      <div class="badge">${bs.title}</div>
+      <p>${bs.text}</p>
+    </div>`;
+  }
+
+  html += `<div class="sec-label">行動 — 次の一歩</div>`;
+  html += `<div class="box"><p>${r.noWeakPoint ? '今のバランスを保ちながら、与える量と受け取る量を定期的に振り返ってみてください。' : bs.action}</p></div>`;
+
+  html += `<div class="sec-label">場面別に見ると</div>`;
+  SCENES.forEach(s=>{
+    const sc = sceneText(r.typeKey, s.who);
+    html += `<div class="scene-item"><div class="who">${s.who}</div><p>${sc.text}</p>`;
+    if(sc.action){
+      html += `<p>${sc.action}</p>`;
+    }
+    html += `</div>`;
+  });
+
+  html += `<div class="sec-label">周りからの見え方</div>`;
+  const PERCEIVE = {
+    'high-low':'周囲からは「本当に頼りになる人」「一緒にいて安心する人」として、かなり高く評価されているはずです。ただしその評価は、あなたがどれだけ無理をしているかとはセットになっていません。周りは「この人はいつも大丈夫そう」と思い込みやすく、あなたが限界に近づいていることに気づくのが遅れがちです。結果として、頼みごとが特定のあなたに集中し続け、負担だけが静かに積み上がっていく、という構造になりやすいタイプです。あなたが「実はしんどい」と口にしない限り、周囲は気づけません。',
+    'high-mid':'周囲からは「頼りになるのに、ちゃんと自分も大事にしている人」として見られやすいタイプです。与えることと受け取ることのバランスが取れているため、あなたに頼る人は安心感を持ちつつも、あなたに過度な負担をかけているという罪悪感を抱きにくい、という良い循環が生まれています。人間関係に関する研究でも、こうした立ち位置は長期的に最も消耗しにくく、信頼を積み上げやすいとされています。今の関わり方は、特別に変える必要のない、安定した形と言えます。',
+    'high-high':'周囲からは「親切な人」として好意的に見られている一方で、あなたの中にある「これだけしたんだから」という気持ちは、言葉にしない限り相手には伝わっていません。相手は「親切にしてもらった」という事実だけを受け取り、あなたがどれくらいの見返りを期待しているかまでは想像していないことが多いです。このズレが積み重なると、あなたの中では「裏切られた」感覚が育つのに、相手には「何が不満なのか分からない」という、すれ違いが起きやすくなります。',
+    'mid-low':'周囲からは「静かに支えてくれる人」として見られやすいタイプです。目立つ場面での活躍は少ないかもしれませんが、気づかれにくいところで誰かの助けになっていることが多く、長く付き合うほど「実はいつも助けられていた」と気づかれる、じわじわと信頼を積み上げるタイプです。見返りを求めない姿勢は好感を持たれやすい一方、頑張りそのものが周囲に見えにくいため、評価のタイミングを逃しやすい側面もあります。',
+    'mid-mid':'周囲からは「付き合いやすい人」「公平な人」として見られやすいタイプです。与えることと受け取ることのバランス感覚が自然に身についているため、人間関係において過度な負担も過度な遠慮も生まれにくく、長期的に安定した関係を築きやすい立ち位置です。心理学の研究でも、このバランス型は人間関係のストレスが最も少ないタイプのひとつとされています。',
+    'mid-high':'周囲からは「しっかりした人」「フェアな人」として見られることが多い一方で、あなたの中にある「損得の感覚」が強く出る場面では、相手が「計算高い」という印象を持つ可能性もあります。本人としては公平さを大事にしているつもりでも、見返りを強く意識する姿勢が表に出すぎると、親しい関係ほど「もっと気楽に付き合いたい」と思われてしまうことがあります。',
+    'low-mid':'周囲からは「マイペースな人」「自分のペースを大事にする人」として見られやすいタイプです。自分から動くことは少なめでも、求められれば応じる姿勢があるため、周囲からの印象は決して悪くありません。ただし、関係の主導権を相手に委ねがちな分、あなたが本当はどうしたいのかが周囲に伝わりにくく、「何を考えているか分かりにくい人」という印象につながることもあります。',
+    'low-low':'周囲からは「自分の世界を持っている人」「深入りしてこない人」として見られやすいタイプです。人間関係に多くのエネルギーを割かない分、無駄なトラブルに巻き込まれにくい一方で、距離を置いているように受け取られ、「親しくなりにくい人」という印象を持たれることもあります。',
+    'low-high':'周囲からの印象は、関係の初期と長期で変わりやすいタイプです。最初は「自分の意見をはっきり持っている人」として好印象を持たれやすい一方、付き合いが長くなるにつれて「いつも自分の都合が優先されている気がする」と感じる人が出てくる可能性があります。悪気がないだけに、周囲からの違和感が伝わりにくく、気づいたときには関係が静かに離れている、ということが起きやすいタイプです。'
+  };
+  html += `<div class="box"><p>${PERCEIVE[r.typeKey]}</p></div>`;
+
+  html += `<div class="disclaimer">
+    <p>※ この診断は、公平感受性（Equity Sensitivity Construct, Huseman et al., 1987）や共同的関係志向（Communal Orientation Scale, Clark & Mills, 1979）の考え方を参考にしていますが、医学的・臨床的な診断ではありません。「傾向」「目安」としてご覧ください。</p>
+    <p>※ この内訳は、設問を意味のまとまりで分けたこの診断独自の区分です。心理学で確立された下位尺度ではありません。</p>
+  </div>`;
+
+  document.getElementById('result-body').innerHTML = html;
+  show(screenResult);
+}
+
+function barRow(label, score){
+  return `<div class="bar-row">
+    <div class="lbl"><span>${label}</span><span>${score}</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div>
+  </div>`;
+}
+</script>
+</body>
+</html>
